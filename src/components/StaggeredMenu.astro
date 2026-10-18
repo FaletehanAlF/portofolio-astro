@@ -1,0 +1,697 @@
+---
+/**
+ * StaggeredMenu — adaptasi dari React Bits (reactbits.dev/components/staggered-menu)
+ *
+ * Ditulis ulang dari React + GSAP menjadi Astro + CSS + vanilla JS,
+ * tanpa dependency tambahan. Tampilan & interaksi utama dipertahankan:
+ *  - panel samping dengan pre-layer berwarna yang masuk berurutan
+ *  - item menu naik satu per satu, lengkap dengan penomoran
+ *  - tombol Menu/Close dengan teks bergulir dan ikon plus yang berputar
+ *  - klik di luar panel dan tombol Escape menutup menu
+ */
+interface MenuItem {
+  label: string;
+  link: string;
+  ariaLabel?: string;
+}
+
+interface SocialItem {
+  label: string;
+  link: string;
+}
+
+interface Props {
+  position?: 'left' | 'right';
+  items?: MenuItem[];
+  socialItems?: SocialItem[];
+  /** Warna pre-layer (maks 4; jika >= 3 warna tengah dibuang, seperti referensi) */
+  colors?: string[];
+  panelColor?: string;
+  panelTextColor?: string;
+  accentColor?: string;
+  menuButtonColor?: string;
+  displaySocials?: boolean;
+  displayItemNumbering?: boolean;
+  closeOnClickAway?: boolean;
+  logoHref?: string;
+  labels?: { menu?: string; close?: string };
+  socialsTitle?: string;
+}
+
+const {
+  position = 'right',
+  items = [],
+  socialItems = [],
+  colors = ['#c9c8bd', '#77796b'],
+  panelColor = '#24241f',
+  panelTextColor = '#f8f8f5',
+  accentColor = '#b9b9ae',
+  menuButtonColor = '#24241f',
+  displaySocials = true,
+  displayItemNumbering = true,
+  closeOnClickAway = true,
+  logoHref = '/',
+  labels = {},
+  socialsTitle = 'Socials'
+} = Astro.props;
+
+const menuLabel = labels.menu ?? 'Menu';
+const closeLabel = labels.close ?? 'Close';
+
+let layers = colors.slice(0, 4);
+if (layers.length >= 3) layers.splice(Math.floor(layers.length / 2), 1);
+
+const showSocials = displaySocials && socialItems.length > 0;
+
+const rootStyle = [
+  `--sm-accent:${accentColor}`,
+  `--sm-panel-bg:${panelColor}`,
+  `--sm-panel-text:${panelTextColor}`,
+  `--sm-btn:${menuButtonColor}`
+].join(';');
+---
+
+<div
+  class="staggered-menu-wrapper"
+  data-staggered-menu
+  data-position={position}
+  data-menu-label={menuLabel}
+  data-close-label={closeLabel}
+  data-click-away={closeOnClickAway ? 'true' : 'false'}
+  style={rootStyle}
+>
+  <div class="sm-prelayers" aria-hidden="true">
+    {layers.map((color, i) => (
+      <div class="sm-prelayer" style={`background:${color};--i:${i}`}></div>
+    ))}
+  </div>
+
+  <header class="staggered-menu-header">
+    <div class="sm-header-inner">
+      <nav class="sm-capsule" aria-label="Navigasi utama">
+        <a href={logoHref} class="sm-logo">Portfolio<span class="sm-logo-dot">.</span></a>
+
+        <button
+          class="sm-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="staggered-menu-panel"
+          aria-label="Buka menu navigasi"
+        >
+          <span class="sm-toggle-textWrap" aria-hidden="true">
+            <span class="sm-toggle-textInner">
+              <span class="sm-toggle-line">{menuLabel}</span>
+            </span>
+          </span>
+          <span class="sm-icon" aria-hidden="true">
+            <span class="sm-icon-line"></span>
+            <span class="sm-icon-line sm-icon-line-v"></span>
+          </span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true" inert>
+    <div class="sm-panel-inner">
+      <ul class="sm-panel-list" data-numbering={displayItemNumbering ? '' : undefined} role="list">
+        {items.map((item, i) => (
+          <li class="sm-panel-itemWrap" style={`--i:${i}`}>
+            <a class="sm-panel-item" href={item.link} aria-label={item.ariaLabel}>
+              <span class="sm-panel-itemLabel">{item.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      {showSocials && (
+        <div class="sm-socials">
+          <h3 class="sm-socials-title">{socialsTitle}</h3>
+          <ul class="sm-socials-list" role="list">
+            {socialItems.map((social, i) => (
+              <li class="sm-socials-item" style={`--j:${i}`}>
+                <a class="sm-socials-link" href={social.link} target="_blank" rel="noopener noreferrer">
+                  {social.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  </aside>
+</div>
+
+<style is:global>
+  /* ===== StaggeredMenu (adapted from React Bits) ===== */
+
+  .staggered-menu-wrapper {
+    --sm-accent: #b9b9ae;
+    --sm-panel-bg: #24241f;
+    --sm-panel-text: #f8f8f5;
+    --sm-btn: #24241f;
+    --sm-capsule-bg: #fcfcfa;
+    --sm-capsule-border: #e5e4dc;
+    --sm-panel-w: clamp(260px, 38vw, 420px);
+    /* Ukuran font item menu dipakai bersama oleh teks, padding, dan posisi nomor */
+    --sm-item-fs: clamp(2.5rem, 9vw, 3.5rem);
+    /* Easing GSAP -> cubic-bezier: power4.out / power3.in / power2.out */
+    --sm-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --sm-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --sm-ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+    --sm-offscreen: 100%;
+
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .staggered-menu-wrapper[data-position='left'] {
+    --sm-offscreen: -100%;
+  }
+
+  /* ----- Header: logo + tombol toggle ----- */
+  .staggered-menu-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  .sm-header-inner {
+    padding: 1.25rem 0 0;
+  }
+
+  /* Navbar kapsul panjang: identitas di kiri, tombol menu di kanan */
+  .sm-capsule {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    width: calc(100% - 32px);
+    min-width: max-content; /* tidak pernah lebih sempit dari isi (logo + tombol) */
+    margin-inline: auto;
+    padding: 0.375rem 18px;
+    background: var(--sm-capsule-bg, #fcfcfa);
+    border: 1px solid var(--sm-capsule-border, #e5e4dc);
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(36, 36, 31, 0.04);
+    pointer-events: auto;
+  }
+
+  /* Tablet */
+  @media (min-width: 768px) {
+    .sm-capsule {
+      width: calc(100% - 48px);
+      padding-inline: 24px;
+    }
+  }
+
+  /* Desktop: kapsul panjang sejajar dengan lebar konten halaman */
+  @media (min-width: 1024px) {
+    .sm-capsule {
+      width: calc(100% - 64px);
+      max-width: 1200px;
+      padding-inline: 30px;
+    }
+  }
+
+  .sm-logo {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--sm-btn);
+    transition: color 0.2s ease;
+    user-select: none;
+  }
+
+  .sm-logo:hover {
+    color: #555c48;
+  }
+
+  .sm-logo:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .sm-logo-dot {
+    color: #77796b;
+  }
+
+  .sm-toggle {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    padding: 0.625rem 0;
+    background: transparent;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--sm-btn);
+    transition: color 0.2s ease;
+  }
+
+  .sm-toggle:hover {
+    color: #555c48;
+  }
+
+  .sm-toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .sm-toggle-textWrap {
+    position: relative;
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .sm-toggle-textInner {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    will-change: transform;
+  }
+
+  .sm-toggle-line {
+    display: block;
+    height: 1em;
+    line-height: 1;
+  }
+
+  .sm-icon {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(0deg);
+    transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform;
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-icon {
+    transform: rotate(225deg);
+    transition: transform 0.8s var(--sm-ease-out);
+  }
+
+  .sm-icon-line {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+
+  .sm-icon-line-v {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  /* ----- Pre-layer: lapisan warna yang masuk berurutan ----- */
+  .sm-prelayers {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: var(--sm-panel-w);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  [data-position='left'] .sm-prelayers {
+    right: auto;
+    left: 0;
+  }
+
+  .sm-prelayer {
+    position: absolute;
+    inset: 0;
+    transform: translateX(var(--sm-offscreen));
+    transition: transform 0.32s var(--sm-ease-in);
+    will-change: transform;
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-prelayer {
+    transform: translateX(0);
+    transition: transform 0.5s var(--sm-ease-out) calc(var(--i, 0) * 0.07s);
+  }
+
+  /* ----- Panel menu ----- */
+  .staggered-menu-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--sm-panel-w);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 6.5rem 2rem 2.5rem;
+    background: var(--sm-panel-bg);
+    color: var(--sm-panel-text);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 10;
+    pointer-events: auto;
+    transform: translateX(var(--sm-offscreen));
+    transition: transform 0.32s var(--sm-ease-in);
+    will-change: transform;
+  }
+
+  [data-position='left'] .staggered-menu-panel {
+    right: auto;
+    left: 0;
+  }
+
+  .staggered-menu-wrapper[data-open] .staggered-menu-panel {
+    transform: translateX(0);
+    transition: transform 0.65s var(--sm-ease-out) 0.15s;
+  }
+
+  .sm-panel-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .sm-panel-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sm-panel-itemWrap {
+    position: relative;
+    overflow: hidden;
+    line-height: 1;
+  }
+
+  .sm-panel-item {
+    position: relative;
+    display: inline-block;
+    padding-right: 1.4em;
+    color: var(--sm-panel-text);
+    font-weight: 600;
+    font-size: var(--sm-item-fs);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+
+  .sm-panel-item:hover {
+    color: var(--sm-accent);
+  }
+
+  .sm-panel-item:focus-visible {
+    outline: 2px solid var(--sm-accent);
+    outline-offset: 4px;
+  }
+
+  .sm-panel-itemLabel {
+    display: inline-block;
+    transform: translateY(140%) rotate(10deg);
+    transform-origin: 50% 100%;
+    will-change: transform;
+  }
+
+  /* Saat menutup, biarkan item di posisi akhir mengikuti panel yang keluar,
+     lalu reset seketika (tanpa transisi) setelah panel selesai turun. */
+  .staggered-menu-wrapper:is([data-open], [data-closing]) .sm-panel-itemLabel {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-panel-itemLabel {
+    transition: transform 1s var(--sm-ease-out) calc(0.25s + var(--i, 0) * 0.1s);
+  }
+
+  /* Penomoran item (01, 02, ...) */
+  .sm-panel-list[data-numbering] {
+    counter-reset: smItem;
+  }
+
+  .sm-panel-list[data-numbering] .sm-panel-item::after {
+    counter-increment: smItem;
+    content: counter(smItem, decimal-leading-zero);
+    position: absolute;
+    top: 0.12em;
+    right: calc(var(--sm-item-fs) * 0.9 - 2px);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--sm-accent);
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .staggered-menu-wrapper:is([data-open], [data-closing]) .sm-panel-list[data-numbering] .sm-panel-item::after {
+    opacity: 1;
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-panel-list[data-numbering] .sm-panel-item::after {
+    transition: opacity 0.6s var(--sm-ease-soft) calc(0.35s + var(--i, 0) * 0.08s);
+  }
+
+  /* ----- Socials ----- */
+  .sm-socials {
+    margin-top: auto;
+    padding-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sm-socials-title {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sm-accent);
+    opacity: 0;
+  }
+
+  .sm-socials-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .sm-socials-link {
+    display: inline-block;
+    padding: 2px 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--sm-panel-text);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(25px);
+    transition: color 0.3s ease, opacity 0.3s ease;
+  }
+
+  .sm-socials-link:hover {
+    color: var(--sm-accent);
+  }
+
+  .sm-socials-link:focus-visible {
+    outline: 2px solid var(--sm-accent);
+    outline-offset: 3px;
+  }
+
+  .staggered-menu-wrapper:is([data-open], [data-closing]) .sm-socials-title,
+  .staggered-menu-wrapper:is([data-open], [data-closing]) .sm-socials-link {
+    opacity: 1;
+  }
+
+  .staggered-menu-wrapper:is([data-open], [data-closing]) .sm-socials-link {
+    transform: translateY(0);
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-socials-title {
+    transition: opacity 0.5s var(--sm-ease-soft) 0.41s;
+  }
+
+  .staggered-menu-wrapper[data-open] .sm-socials-link {
+    transition:
+      color 0.3s ease,
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(0.45s + var(--j, 0) * 0.08s),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(0.45s + var(--j, 0) * 0.08s);
+  }
+
+  /* Setelah animasi masuk selesai, transisi dibuat singkat untuk efek hover */
+  .staggered-menu-wrapper.sm-ready .sm-socials-link {
+    transition: color 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .sm-socials-list:hover .sm-socials-link:not(:hover) {
+    opacity: 0.35;
+  }
+
+  /* ----- Mobile: panel menutupi seluruh layar ----- */
+  @media (max-width: 1024px) {
+    .staggered-menu-wrapper {
+      --sm-panel-w: 100%;
+    }
+  }
+
+  /* ----- Hormati prefers-reduced-motion ----- */
+  @media (prefers-reduced-motion: reduce) {
+    .staggered-menu-wrapper .sm-prelayer,
+    .staggered-menu-wrapper .staggered-menu-panel,
+    .staggered-menu-wrapper .sm-panel-itemLabel,
+    .staggered-menu-wrapper .sm-panel-item::after,
+    .staggered-menu-wrapper .sm-socials-title,
+    .staggered-menu-wrapper .sm-socials-link,
+    .staggered-menu-wrapper .sm-icon,
+    .staggered-menu-wrapper .sm-toggle {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+    }
+
+    .sm-toggle-textInner {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  // Adaptasi vanilla JS dari timeline GSAP pada referensi React Bits.
+  const EASE_OPEN = 'cubic-bezier(0.16, 1, 0.3, 1)'; // ~power4.out
+
+  document.querySelectorAll('[data-staggered-menu]').forEach((wrapper) => {
+    if (wrapper.dataset.smInit === 'true') return;
+    wrapper.dataset.smInit = 'true';
+
+    const panel = wrapper.querySelector('.staggered-menu-panel');
+    const toggle = wrapper.querySelector('.sm-toggle');
+    const textInner = wrapper.querySelector('.sm-toggle-textInner');
+    if (!(panel instanceof HTMLElement && toggle instanceof HTMLElement && textInner instanceof HTMLElement)) return;
+    if (!(wrapper instanceof HTMLElement)) return;
+
+    const menuLabel = wrapper.dataset.menuLabel || 'Menu';
+    const closeLabel = wrapper.dataset.closeLabel || 'Close';
+    const closeOnClickAway = wrapper.dataset.clickAway !== 'false';
+
+    let open = false;
+    let readyTimer = 0;
+    let resetTimer = 0;
+
+    // Teks tombol bergulir (Menu <-> Close), pengganti tween GSAP pada referensi.
+    const cycleLabel = (opening) => {
+      const current = opening ? menuLabel : closeLabel;
+      const target = opening ? closeLabel : menuLabel;
+      const seq = [current];
+      let last = current;
+      for (let i = 0; i < 3; i += 1) {
+        last = last === menuLabel ? closeLabel : menuLabel;
+        seq.push(last);
+      }
+      if (last !== target) seq.push(target);
+      seq.push(target);
+
+      textInner.innerHTML = seq.map((line) => `<span class="sm-toggle-line">${line}</span>`).join('');
+      textInner.style.transition = 'none';
+      textInner.style.transform = 'translateY(0)';
+      void textInner.offsetWidth;
+      const shift = ((seq.length - 1) / seq.length) * 100;
+      const duration = 0.5 + seq.length * 0.07;
+      textInner.style.transition = `transform ${duration}s ${EASE_OPEN}`;
+      textInner.style.transform = `translateY(-${shift}%)`;
+    };
+
+    const openMenu = () => {
+      if (open) return;
+      open = true;
+      window.clearTimeout(resetTimer);
+      window.clearTimeout(readyTimer);
+
+      wrapper.classList.remove('sm-closing', 'sm-ready');
+      void wrapper.offsetWidth; // reflow: animasi masuk selalu dimulai dari awal
+      wrapper.setAttribute('data-open', '');
+
+      panel.removeAttribute('aria-hidden');
+      panel.removeAttribute('inert');
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Tutup menu navigasi');
+      cycleLabel(true);
+
+      readyTimer = window.setTimeout(() => wrapper.classList.add('sm-ready'), 1200);
+    };
+
+    const closeMenu = () => {
+      if (!open) return;
+      open = false;
+      window.clearTimeout(readyTimer);
+
+      // Panel akan di-inert; simpan dulu apakah fokus sedang di dalamnya
+      // agar bisa dikembalikan ke tombol toggle (aksesibilitas keyboard).
+      const hadFocus = panel.contains(document.activeElement);
+
+      wrapper.classList.add('sm-closing');
+      wrapper.classList.remove('sm-ready');
+      wrapper.removeAttribute('data-open');
+
+      panel.setAttribute('aria-hidden', 'true');
+      panel.setAttribute('inert', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Buka menu navigasi');
+      cycleLabel(false);
+      if (hadFocus) toggle.focus();
+
+      resetTimer = window.setTimeout(() => wrapper.classList.remove('sm-closing'), 500);
+    };
+
+    toggle.addEventListener('click', () => (open ? closeMenu() : openMenu()));
+
+    if (closeOnClickAway) {
+      document.addEventListener('mousedown', (event) => {
+        if (!open) return;
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        if (panel.contains(target) || toggle.contains(target)) return;
+        closeMenu();
+      });
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && open) closeMenu();
+    });
+
+    panel.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => closeMenu());
+    });
+  });
+</script>

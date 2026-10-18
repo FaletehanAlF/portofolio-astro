@@ -1,6 +1,21 @@
 
 ---
 import "../styles/global.css";
+import StaggeredMenu from "../components/StaggeredMenu.astro";
+
+const menuItems = [
+  { label: "Home", link: "/" },
+  { label: "About", link: "/about" },
+  { label: "Projects", link: "/projects" },
+  { label: "Contact", link: "/contact" }
+];
+
+// TODO: ganti link placeholder di bawah dengan akun Anda yang sebenarnya.
+const menuSocials = [
+  { label: "GitHub", link: "https://github.com/FaletehanAlF" },
+  { label: "LinkedIn", link: "#" },
+  { label: "Email", link: "#" }
+];
 ---
 
 <html lang="id">
@@ -12,83 +27,96 @@ import "../styles/global.css";
       content="Portfolio Faletehan Al Farabi, Software Engineering Student dan Web Developer."
     />
     <title>Faletehan Al Farabi — Portfolio</title>
+
+    <!-- Montserrat: preconnect + hanya weight yang dipakai (400/500/600/700) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body class="bg-[#f8f8f5] text-[#24241f]">
-    <header class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10">
-      <a href="/" class="text-sm font-bold tracking-tight">
-        FA<span class="text-[#77796b]">.</span>
-      </a>
+    <StaggeredMenu items={menuItems} socialItems={menuSocials} />
 
-      <nav class="flex items-center gap-5 text-sm text-[#66665f] md:gap-8">
-        <a href="/" class="text-[#24241f]">Home</a>
-        <a href="/about" class="transition-colors hover:text-black">About</a>
-        <a href="/projects" class="transition-colors hover:text-black">Projects</a>
-        <a href="/contact" class="transition-colors hover:text-black">Contact</a>
-      </nav>
-    </header>
+    <!-- Spacer setinggi header sebelumnya agar alur halaman tetap sama -->
+    <div class="h-[68px]"></div>
 
     <main>
-      <section class="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-24 pt-20 md:grid-cols-[1.3fr_0.7fr] md:px-10 md:pb-36 md:pt-28">
+      <section
+        aria-labelledby="hero-title"
+        class="mx-auto grid max-w-7xl px-6 pb-24 pt-20 md:px-10 md:pb-36 md:pt-28 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-x-20"
+      >
+        <!-- Kolom kiri: konten utama -->
         <div>
-          <p class="mb-7 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-[#77796b]">
-            <span class="h-px w-8 bg-[#77796b]"></span>
+          <p
+            class="hero-reveal flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-[#77796b]"
+            style="--reveal-delay: 0ms"
+          >
+            <span class="h-px w-8 bg-[#555c48]" aria-hidden="true"></span>
             Software Engineering Student
           </p>
 
-          <h1 class="max-w-3xl text-5xl font-semibold leading-[1.08] tracking-[-0.06em] sm:text-6xl md:text-7xl lg:text-8xl">
-            Building digital
-            <span class="font-normal italic text-[#77796b]">experiences</span>
-            with purpose.
+          <h1
+            id="hero-title"
+            class="hero-reveal mt-7 text-5xl font-bold leading-[1.02] tracking-[-0.035em] text-[#24241f] sm:text-6xl lg:text-7xl xl:text-8xl"
+            style="--reveal-delay: 80ms"
+          >
+            Faletehan<br />
+            <span class="font-normal">Al Farabi</span><span class="text-[#555c48]">.</span>
           </h1>
 
-          <p class="mt-8 max-w-lg text-base leading-8 text-[#696960] md:text-lg">
-            Halo, saya Faletehan Al Farabi. Saya tertarik pada software
-            engineering dan pengembangan web untuk membangun solusi digital
-            yang bermanfaat dan mudah digunakan.
+          <p
+            class="hero-reveal mt-7 max-w-xl text-pretty text-base leading-7 text-[#696960] md:text-lg md:leading-8"
+            style="--reveal-delay: 160ms"
+          >
+            Halo, saya Faletehan — mahasiswa software engineering yang tertarik
+            pada pengembangan web. Saya suka membangun antarmuka yang bersih,
+            cepat, dan mudah digunakan, sambil terus belajar lewat project dan
+            eksplorasi hal-hal baru di dunia web.
           </p>
 
-          <div class="mt-9 flex flex-wrap items-center gap-5">
+          <div class="hero-reveal mt-10 flex flex-wrap items-center gap-x-8 gap-y-4" style="--reveal-delay: 240ms">
             <a
               href="/projects"
-              class="inline-flex items-center gap-3 bg-[#292a24] px-6 py-4 text-sm text-white transition-colors hover:bg-[#48493f]"
+              class="hero-cta group inline-flex items-center gap-3 bg-[#292a24] px-7 py-4 text-sm font-medium tracking-wide text-[#f8f8f5] transition-colors duration-300 hover:bg-[#555c48]"
             >
-              Lihat Proyek <span aria-hidden="true">↗</span>
+              Lihat Project
+              <span
+                aria-hidden="true"
+                class="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              >↗</span>
             </a>
 
             <a
               href="/contact"
-              class="text-sm underline decoration-[#b9b9ae] underline-offset-8 transition-colors hover:text-[#77796b]"
+              class="hero-link text-sm font-medium underline decoration-[#b9b9ae] underline-offset-8 transition-colors duration-300 hover:text-[#555c48] hover:decoration-[#555c48]"
             >
               Hubungi Saya
             </a>
           </div>
+
+          <div
+            class="hero-reveal mt-14 flex items-center gap-3 border-t border-[#e5e4dc] pt-5 text-xs font-medium tracking-[0.06em] text-[#77796b]"
+            style="--reveal-delay: 320ms"
+          >
+            <span class="h-1.5 w-1.5 shrink-0 bg-[#555c48]" aria-hidden="true"></span>
+            <span>Saat ini fokus belajar software engineering &amp; pengembangan web</span>
+          </div>
         </div>
 
-        <div class="relative mx-auto w-full max-w-sm md:justify-self-end">
-          <div class="aspect-[4/5] overflow-hidden bg-[#e8e7df] p-5 sm:p-7">
-            <div class="flex h-full flex-col justify-between border border-[#c9c8bd] p-5 sm:p-7">
-              <span class="text-xs uppercase tracking-[0.2em] text-[#77796b]">
-                Portfolio / 2026
-              </span>
-
-              <div>
-                <p class="text-sm text-[#77796b]">Curious by nature.</p>
-                <p class="mt-2 text-4xl font-medium tracking-[-0.06em] sm:text-5xl">
-                  Made to<br />make an impact.
-                </p>
-              </div>
-
-              <div class="flex items-end justify-between">
-                <span class="text-xs text-[#77796b]">Based in Indonesia</span>
-                <span class="text-3xl" aria-hidden="true">✳</span>
-              </div>
-            </div>
-          </div>
-
-          <span class="absolute -bottom-5 -left-3 text-xs text-[#77796b] sm:-left-8">
-            Personal portfolio — 01
-          </span>
+        <!--
+          Kolom kanan: area khusus untuk komponen React Bits.
+          - Sengaja dibiarkan kosong: tanpa gambar, avatar, kartu, atau animasi.
+          - Tinggi minimum hanya aktif di desktop (lg:min-h-[26rem]) agar mobile
+            tidak menyisakan ruang kosong.
+          - Saat komponen dipasang nanti, cukup taruh di dalam div ini —
+            grid dan proporsi kolom tidak perlu diubah. Jangan lupa hapus
+            aria-hidden ketika area ini sudah berisi konten.
+        -->
+        <div class="hero-slot lg:min-h-[26rem]" data-react-bits-slot aria-hidden="true">
+          <!-- React Bits component will be placed here -->
         </div>
       </section>
 
@@ -109,3 +137,35 @@ import "../styles/global.css";
     </footer>
   </body>
 </html>
+
+<style>
+  /* Animasi masuk hero: sekali saat load, halus dan bertahap antar elemen */
+  .hero-reveal {
+    animation: hero-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  @keyframes hero-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Focus ring untuk CTA hero */
+  .hero-cta:focus-visible,
+  .hero-link:focus-visible {
+    outline: 2px solid #555c48;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-reveal {
+      animation: none;
+    }
+  }
+</style>
