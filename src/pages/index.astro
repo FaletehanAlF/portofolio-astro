@@ -2,6 +2,9 @@
 ---
 import "../styles/global.css";
 import StaggeredMenu from "../components/StaggeredMenu.astro";
+import Lanyard from "../components/Lanyard.astro";
+import LogoLoop from "../components/LogoLoop.astro";
+import { techLogos } from "../data/tech-logos.js";
 
 const menuItems = [
   { label: "Home", link: "/" },
@@ -35,6 +38,12 @@ const menuSocials = [
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      Penanda JS aktif: konten bawah-lipatan baru disembunyikan (untuk animasi
+      reveal) setelah baris ini jalan — tanpa JS konten tetap terlihat.
+    -->
+    <script is:inline>document.documentElement.classList.add('has-reveal');</script>
   </head>
 
   <body class="bg-[#f8f8f5] text-[#24241f]">
@@ -77,69 +86,148 @@ const menuSocials = [
             eksplorasi hal-hal baru di dunia web.
           </p>
 
-          <div class="hero-reveal mt-10 flex flex-wrap items-center gap-x-8 gap-y-4" style="--reveal-delay: 240ms">
+          <div class="hero-reveal mt-10 flex flex-wrap items-center gap-x-4 gap-y-3" style="--reveal-delay: 240ms">
             <a
               href="/projects"
-              class="hero-cta group inline-flex items-center gap-3 bg-[#292a24] px-7 py-4 text-sm font-medium tracking-wide text-[#f8f8f5] transition-colors duration-300 hover:bg-[#555c48]"
+              class="hero-cta group relative inline-flex h-12 items-center gap-3 overflow-hidden rounded-full bg-[#24241f] pl-6 pr-1.5 text-sm font-medium tracking-wide text-[#f8f8f5] transition-[background-color,box-shadow,translate] duration-300 ease-out hover:bg-[#2d2e26] motion-safe:hover:shadow-[0_18px_34px_-20px_rgba(36,36,31,0.9)]"
             >
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute left-[-70%] top-0 h-full w-[45%] -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:transition-[translate] motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:translate-x-[340%]"
+              ></span>
               Lihat Project
               <span
                 aria-hidden="true"
-                class="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              >↗</span>
+                class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#f8f8f5] text-[#24241f] transition-[translate] duration-300 ease-out motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-3.5 w-3.5"
+                >
+                  <path d="M7 17 17 7"></path>
+                  <path d="M8 7h9v9"></path>
+                </svg>
+              </span>
             </a>
 
             <a
               href="/contact"
-              class="hero-link text-sm font-medium underline decoration-[#b9b9ae] underline-offset-8 transition-colors duration-300 hover:text-[#555c48] hover:decoration-[#555c48]"
+              class="hero-link group inline-flex h-12 items-center gap-2.5 rounded-full border border-[#24241f]/25 px-6 text-sm font-medium tracking-wide text-[#24241f] transition-[background-color,border-color,color,translate] duration-300 ease-out hover:border-[#24241f] hover:bg-[#24241f] hover:text-[#f8f8f5]"
             >
               Hubungi Saya
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3.5 w-3.5 transition-[translate] duration-300 ease-out motion-safe:group-hover:translate-x-0.5"
+              >
+                <path d="M5 12h14"></path>
+                <path d="m13 6 6 6-6 6"></path>
+              </svg>
             </a>
-          </div>
-
-          <div
-            class="hero-reveal mt-14 flex items-center gap-3 border-t border-[#e5e4dc] pt-5 text-xs font-medium tracking-[0.06em] text-[#77796b]"
-            style="--reveal-delay: 320ms"
-          >
-            <span class="h-1.5 w-1.5 shrink-0 bg-[#555c48]" aria-hidden="true"></span>
-            <span>Saat ini fokus belajar software engineering &amp; pengembangan web</span>
           </div>
         </div>
 
         <!--
-          Kolom kanan: area khusus untuk komponen React Bits.
-          - Sengaja dibiarkan kosong: tanpa gambar, avatar, kartu, atau animasi.
-          - Tinggi minimum hanya aktif di desktop (lg:min-h-[26rem]) agar mobile
-            tidak menyisakan ruang kosong.
-          - Saat komponen dipasang nanti, cukup taruh di dalam div ini —
-            grid dan proporsi kolom tidak perlu diubah. Jangan lupa hapus
-            aria-hidden ketika area ini sudah berisi konten.
+          Kolom kanan: Lanyard (React Bits) — port vanilla JS + three.js.
+          - Hanya dimuat di desktop (lg+); di bawah lg tidak diinisialisasi
+            sama sekali supaya mobile tetap ringan.
+          - three.js masuk sebagai chunk dinamis setelah halaman selesai load,
+            dan render berhenti sendiri saat kartu sudah tenang.
         -->
-        <div class="hero-slot lg:min-h-[26rem]" data-react-bits-slot aria-hidden="true">
-          <!-- React Bits component will be placed here -->
+        <div class="hero-slot hero-reveal-right hidden lg:block lg:h-[26rem]" style="--reveal-delay: 200ms">
+          <Lanyard cardColor="#24241f" strapColor="#555c48" breeze={0} />
+        </div>
+      </section>
+
+      <!--
+        Tech Stack: logo berjalan (LogoLoop — port vanilla JS dari React Bits).
+        Judul di tengah; loop melambat/berhenti saat hover atau fokus, bisa
+        di-drag, dan berhenti total di bawah prefers-reduced-motion.
+      -->
+      <section aria-labelledby="tech-stack-title" class="border-t border-[#e5e4dc]">
+        <div class="mx-auto max-w-7xl px-6 pb-14 pt-12 md:px-10 md:pb-16 md:pt-14">
+          <h2
+            id="tech-stack-title"
+            data-reveal="left"
+            class="flex items-center justify-center gap-4 text-center text-xs font-semibold uppercase tracking-[0.3em] text-[#77796b]"
+          >
+            <span class="h-px w-8 bg-[#555c48]" aria-hidden="true"></span>
+            Tech Stack
+            <span class="h-px w-8 bg-[#555c48]" aria-hidden="true"></span>
+          </h2>
+
+          <div class="mt-10 md:mt-12" data-reveal="up" style="--reveal-delay: 90ms">
+            <LogoLoop
+              logos={techLogos}
+              speed={55}
+              logoHeight={40}
+              gap={64}
+              fadeOutWidth={0.15}
+              muted={0.45}
+              labels="hover"
+              scaleOnHover
+              ariaLabel="Tech stack yang saya gunakan"
+            />
+          </div>
         </div>
       </section>
 
       <section class="border-y border-[#e5e4dc]">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-6 text-xs uppercase tracking-[0.16em] text-[#77796b] md:px-10">
-          <span>Web Development</span>
-          <span aria-hidden="true">✳</span>
-          <span>Creative Problem Solving</span>
-          <span aria-hidden="true">✳</span>
-          <span>Continuous Learning</span>
+          <span data-reveal="left">Web Development</span>
+          <span data-reveal="up" style="--reveal-delay: 60ms" aria-hidden="true">✳</span>
+          <span data-reveal="up" style="--reveal-delay: 110ms">Creative Problem Solving</span>
+          <span data-reveal="up" style="--reveal-delay: 160ms" aria-hidden="true">✳</span>
+          <span data-reveal="right" style="--reveal-delay: 210ms">Continuous Learning</span>
         </div>
       </section>
     </main>
 
     <footer class="mx-auto flex max-w-7xl flex-wrap justify-between gap-3 px-6 py-7 text-xs text-[#77796b] md:px-10">
-      <span>© 2026 Faletehan Al Farabi</span>
-      <span>Designed with intention.</span>
+      <span data-reveal="left">© 2026 Faletehan Al Farabi</span>
+      <span data-reveal="right">Designed with intention.</span>
     </footer>
+
+    <!--
+      Reveal konten saat masuk viewport: sekali jalan per elemen, hanya
+      opacity + translate (murah untuk compositor), hormati reduced-motion.
+    -->
+    <script>
+      const revealTargets = [...document.querySelectorAll('[data-reveal]')];
+      if (revealTargets.length) {
+        const wantsMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!wantsMotion || typeof IntersectionObserver === 'undefined') {
+          for (const target of revealTargets) target.classList.add('is-revealed');
+        } else {
+          const observer = new IntersectionObserver(
+            entries => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+              }
+            },
+            { threshold: 0.05 }
+          );
+          for (const target of revealTargets) observer.observe(target);
+        }
+      }
+    </script>
   </body>
 </html>
 
 <style>
-  /* Animasi masuk hero: sekali saat load, halus dan bertahap antar elemen */
+  /* Animasi masuk hero: sekali saat load — kolom teks dari kiri, kolom
+     Lanyard dari kanan; halus, bertahap, dan hanya opacity + translate. */
   .hero-reveal {
     animation: hero-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: var(--reveal-delay, 0ms);
@@ -148,12 +236,54 @@ const menuSocials = [
   @keyframes hero-reveal {
     from {
       opacity: 0;
-      transform: translateY(18px);
+      translate: -22px 0;
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      translate: 0 0;
     }
+  }
+
+  .hero-reveal-right {
+    animation: hero-reveal-right 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 200ms);
+  }
+
+  @keyframes hero-reveal-right {
+    from {
+      opacity: 0;
+      translate: 24px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* Reveal saat masuk viewport (aktif hanya jika JS berjalan) */
+  :global(html.has-reveal) [data-reveal] {
+    opacity: 0;
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      translate 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.has-reveal) [data-reveal='left'] {
+    translate: -22px 0;
+  }
+
+  :global(html.has-reveal) [data-reveal='right'] {
+    translate: 22px 0;
+  }
+
+  :global(html.has-reveal) [data-reveal='up'] {
+    translate: 0 14px;
+  }
+
+  :global(html.has-reveal) [data-reveal].is-revealed {
+    opacity: 1;
+    translate: 0 0;
   }
 
   /* Focus ring untuk CTA hero */
@@ -164,8 +294,15 @@ const menuSocials = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-reveal {
+    .hero-reveal,
+    .hero-reveal-right {
       animation: none;
+    }
+
+    :global(html.has-reveal) [data-reveal] {
+      opacity: 1;
+      translate: none;
+      transition: none;
     }
   }
 </style>

@@ -113,6 +113,8 @@ const rootStyle = [
   </header>
 
   <aside id="staggered-menu-panel" class="staggered-menu-panel" aria-hidden="true" inert>
+    <button class="sm-panel-close" type="button" aria-label="Tutup menu navigasi"></button>
+
     <div class="sm-panel-inner">
       <ul class="sm-panel-list" data-numbering={displayItemNumbering ? '' : undefined} role="list">
         {items.map((item, i) => (
@@ -338,7 +340,7 @@ const rootStyle = [
     bottom: 0;
     right: 0;
     width: var(--sm-panel-w);
-    z-index: 5;
+    z-index: 35; /* di atas navbar (30) dan di bawah panel (40) */
     pointer-events: none;
   }
 
@@ -374,7 +376,7 @@ const rootStyle = [
     color: var(--sm-panel-text);
     overflow-y: auto;
     overscroll-behavior: contain;
-    z-index: 10;
+    z-index: 40; /* di atas navbar supaya sidebar tidak ketimpa */
     pointer-events: auto;
     transform: translateX(var(--sm-offscreen));
     transition: transform 0.32s var(--sm-ease-in);
@@ -389,6 +391,52 @@ const rootStyle = [
   .staggered-menu-wrapper[data-open] .staggered-menu-panel {
     transform: translateX(0);
     transition: transform 0.65s var(--sm-ease-out) 0.15s;
+  }
+
+  /* Tombol tutup di pojok kanan atas, di dalam panel */
+  .sm-panel-close {
+    position: absolute;
+    top: 22px;
+    right: 28px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--sm-panel-text) 28%, transparent);
+    border-radius: 9999px;
+    color: var(--sm-panel-text);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .sm-panel-close::before,
+  .sm-panel-close::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+
+  .sm-panel-close::before {
+    transform: rotate(45deg);
+  }
+
+  .sm-panel-close::after {
+    transform: rotate(-45deg);
+  }
+
+  .sm-panel-close:hover {
+    background: color-mix(in srgb, var(--sm-panel-text) 10%, transparent);
+    border-color: color-mix(in srgb, var(--sm-panel-text) 55%, transparent);
+  }
+
+  .sm-panel-close:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
   }
 
   .sm-panel-inner {
@@ -576,7 +624,8 @@ const rootStyle = [
     .staggered-menu-wrapper .sm-socials-title,
     .staggered-menu-wrapper .sm-socials-link,
     .staggered-menu-wrapper .sm-icon,
-    .staggered-menu-wrapper .sm-toggle {
+    .staggered-menu-wrapper .sm-toggle,
+    .staggered-menu-wrapper .sm-panel-close {
       transition-duration: 0.01ms !important;
       transition-delay: 0s !important;
     }
@@ -675,6 +724,9 @@ const rootStyle = [
     };
 
     toggle.addEventListener('click', () => (open ? closeMenu() : openMenu()));
+
+    const closeButton = wrapper.querySelector('.sm-panel-close');
+    closeButton?.addEventListener('click', closeMenu);
 
     if (closeOnClickAway) {
       document.addEventListener('mousedown', (event) => {

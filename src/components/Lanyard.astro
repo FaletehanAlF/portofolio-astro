@@ -1,0 +1,134 @@
+---
+/**
+ * Lanyard — port vanilla JS dari React Bits (reactbits.dev/components/lanyard).
+ *
+ * - Lapisan React dihapus; inti three.js + fisika ada di ./lanyard/lanyard-core.js.
+ * - three.js di-import dinamis (chunk terpisah) setelah halaman selesai load,
+ *   dan tidak diinisialisasi sama sekali jika elemen sedang disembunyikan
+ *   (mis. di bawah breakpoint lg) — supaya halaman tetap ringan.
+ */
+interface Props {
+  frontImage?: string;
+  backImage?: string;
+  imageFit?: 'cover' | 'contain';
+  cardColor?: string;
+  orientation?: 'portrait' | 'landscape';
+  finish?: 'glossy' | 'matte' | 'holographic' | 'metallic';
+  cornerRadius?: number;
+  size?: number;
+  anchor?: 'left' | 'center' | 'right';
+  strapLength?: number;
+  strapImage?: string;
+  strapColor?: string;
+  strapWidth?: number;
+  metal?: 'graphite' | 'silver' | 'gold';
+  gravity?: number;
+  damping?: number;
+  elasticity?: number;
+  breeze?: number;
+  interactive?: boolean;
+  intro?: boolean;
+  class?: string;
+}
+
+const {
+  class: className = '',
+  frontImage,
+  backImage,
+  imageFit,
+  cardColor,
+  orientation,
+  finish,
+  cornerRadius,
+  size,
+  anchor,
+  strapLength,
+  strapImage,
+  strapColor,
+  strapWidth,
+  metal,
+  gravity,
+  damping,
+  elasticity,
+  breeze,
+  interactive,
+  intro
+} = Astro.props;
+
+// Hanya opsi yang dikenal yang diteruskan ke komponen (prop bawaan Astro
+// seperti data-astro-cid-* tidak ikut terbawa ke data-options).
+const options = {
+  frontImage,
+  backImage,
+  imageFit,
+  cardColor,
+  orientation,
+  finish,
+  cornerRadius,
+  size,
+  anchor,
+  strapLength,
+  strapImage,
+  strapColor,
+  strapWidth,
+  metal,
+  gravity,
+  damping,
+  elasticity,
+  breeze,
+  interactive,
+  intro
+};
+---
+
+<div
+  class={`lanyard ${className}`.trim()}
+  data-lanyard
+  data-options={JSON.stringify(options)}
+></div>
+
+<style>
+  .lanyard {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .lanyard :global(.lanyard-canvas) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  const bootLanyards = async () => {
+    // Filter visibilitas SEBELUM meng-import chunk three.js: elemen yang sedang
+    // disembunyikan (offsetParent null untuk display:none) tidak boleh memicu
+    // unduhan ~570 KB.
+    const nodes = [...document.querySelectorAll('[data-lanyard]:not([data-lanyard-init])')].filter(
+      (element) => element instanceof HTMLElement && element.offsetParent !== null && element.clientWidth > 0
+    );
+    if (!nodes.length) return;
+    const { createLanyard } = await import('./lanyard/lanyard-core.js');
+    nodes.forEach((element) => {
+      element.setAttribute('data-lanyard-init', 'true');
+      let options = {};
+      try {
+        options = JSON.parse(element.dataset.options || '{}');
+      } catch {
+        options = {};
+      }
+      createLanyard(element, options);
+    });
+  };
+
+  const scheduleBoot = () => {
+    if ('requestIdleCallback' in window) window.requestIdleCallback(bootLanyards, { timeout: 1500 });
+    else window.setTimeout(bootLanyards, 200);
+  };
+
+  if (document.readyState === 'complete') scheduleBoot();
+  else window.addEventListener('load', scheduleBoot, { once: true });
+</script>
