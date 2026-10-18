@@ -181,6 +181,73 @@ const menuSocials = [
         </div>
       </section>
 
+      <!--
+        About Me: ringkasan singkat di bawah Tech Stack. Isi hanya memakai
+        info yang sudah ada (peran, fokus, stack) — tanpa data yang dikarang.
+        Kolom kiri muncul dari kiri, daftar fakta dari kanan (sistem reveal).
+      -->
+      <section id="about" aria-labelledby="about-title" class="border-t border-[#e5e4dc]">
+        <div
+          class="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:px-10 md:py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.85fr)] lg:gap-x-20"
+        >
+          <div data-reveal="left">
+            <p class="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-[#77796b]">
+              <span class="h-px w-8 bg-[#555c48]" aria-hidden="true"></span>
+              About Me
+            </p>
+
+            <h2
+              id="about-title"
+              class="mt-7 text-3xl font-bold leading-[1.05] tracking-[-0.03em] text-[#24241f] sm:text-4xl"
+            >
+              Tentang saya<span class="text-[#555c48]">.</span>
+            </h2>
+
+            <p class="mt-6 max-w-xl text-pretty text-base leading-7 text-[#696960] md:text-lg md:leading-8">
+              Saya Faletehan Al Farabi, mahasiswa software engineering yang
+              menikmati proses mengubah ide menjadi antarmuka web yang bersih,
+              cepat, dan enak dipakai — dari merapikan struktur, memilih warna
+              dan tipografi, sampai memastikan halaman terasa ringan saat dibuka.
+            </p>
+
+            <p class="mt-4 max-w-xl text-pretty text-base leading-7 text-[#696960] md:text-lg md:leading-8">
+              Saya percaya cara terbaik belajar adalah dengan membangun: setiap
+              project jadi kesempatan untuk mencoba hal baru, memperbaiki
+              detail kecil, dan menulis kode yang lebih rapi dari sebelumnya.
+            </p>
+          </div>
+
+          <div data-reveal="right" style="--reveal-delay: 90ms" class="lg:pt-1">
+            <dl class="divide-y divide-[#e5e4dc] border-y border-[#e5e4dc]">
+              <div class="grid grid-cols-1 gap-1.5 py-4 sm:grid-cols-[9rem_1fr] sm:gap-4">
+                <dt class="text-xs font-medium uppercase tracking-[0.16em] text-[#77796b] sm:pt-0.5">Fokus</dt>
+                <dd class="text-sm leading-6 text-[#24241f] md:text-base md:leading-7">
+                  Pengembangan web &amp; antarmuka (UI) yang bersih dan cepat
+                </dd>
+              </div>
+              <div class="grid grid-cols-1 gap-1.5 py-4 sm:grid-cols-[9rem_1fr] sm:gap-4">
+                <dt class="text-xs font-medium uppercase tracking-[0.16em] text-[#77796b] sm:pt-0.5">Tech stack</dt>
+                <dd class="text-sm leading-6 text-[#24241f] md:text-base md:leading-7">
+                  Astro, Tailwind CSS, dan JavaScript
+                </dd>
+              </div>
+              <div class="grid grid-cols-1 gap-1.5 py-4 sm:grid-cols-[9rem_1fr] sm:gap-4">
+                <dt class="text-xs font-medium uppercase tracking-[0.16em] text-[#77796b] sm:pt-0.5">Sekarang</dt>
+                <dd class="text-sm leading-6 text-[#24241f] md:text-base md:leading-7">
+                  Membangun portfolio ini sambil terus belajar lewat project nyata
+                </dd>
+              </div>
+              <div class="grid grid-cols-1 gap-1.5 py-4 sm:grid-cols-[9rem_1fr] sm:gap-4">
+                <dt class="text-xs font-medium uppercase tracking-[0.16em] text-[#77796b] sm:pt-0.5">Terbuka untuk</dt>
+                <dd class="text-sm leading-6 text-[#24241f] md:text-base md:leading-7">
+                  Kolaborasi project, belajar bareng, atau diskusi seputar web
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
       <section class="border-y border-[#e5e4dc]">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-6 text-xs uppercase tracking-[0.16em] text-[#77796b] md:px-10">
           <span data-reveal="left">Web Development</span>
